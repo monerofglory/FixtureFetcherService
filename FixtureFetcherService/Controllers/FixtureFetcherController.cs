@@ -19,7 +19,7 @@ namespace FixtureFetcherService.Controllers
         [Route("GetTomorrowsFixture/{team}")]
         public Fixture? GetTomorrowsFixture(string team)
         {
-            var result = f.GetFixtureByDate(team, DateOnly.FromDateTime(DateTime.Now).AddDays(-1));
+            var result = f.GetFixtureByDate(team, DateOnly.FromDateTime(DateTime.Now).AddDays(1));
             if (result == null)
             {
                 Response.StatusCode = 404;

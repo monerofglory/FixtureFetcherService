@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FixtureFetcherService.Controllers
 {
-    [Route("FixtureFetcher")]
     [ApiController]
     public class FixtureFetcherController : ControllerBase
     {
@@ -14,12 +13,27 @@ namespace FixtureFetcherService.Controllers
             _logger = logger;
         }
 
-
         [HttpGet]
-        [Route("GetTomorrowsFixture/{team}")]
-        public Fixture? GetTomorrowsFixture(string team)
+        [Route("{sportType}/team/{teamName}")]
+        public Fixture? GetFixture(string sportType, string teamName)
         {
-            var result = f.GetFixtureByDate(team, DateOnly.FromDateTime(DateTime.Now).AddDays(1));
+            DateOnly? date = GetDateFromUrlParameters();
+            
+            Fixture? result = null;
+            switch (sportType)
+            {
+                case "soccer":
+                    if (date != null)
+                    {
+                        result = f.GetFixtureByDate(teamName, date.Value);
+                    }
+                    else
+                    {
+                        result = f.GetNextFixture(teamName);
+                    }
+                    break;
+            }
+
             if (result == null)
             {
                 Response.StatusCode = 404;
@@ -27,41 +41,29 @@ namespace FixtureFetcherService.Controllers
             return result;
         }
 
-        [HttpGet]
-        [Route("GetTodaysFixture/{team}")]
-        public Fixture? GetTodaysFixture(string team)
+        private DateOnly? GetDateFromUrlParameters()
         {
-            var result = f.GetFixtureByDate(team, DateOnly.FromDateTime(DateTime.Now));
-            if (result == null)
+            string date = HttpContext.Request.Query["date"].ToString();
+            DateOnly? dateAsDateOnly = null;
+            if (date != null && date != string.Empty)
             {
-                Response.StatusCode = 404;
+                switch (date)
+                {
+                    case "today":
+                        dateAsDateOnly = DateOnly.FromDateTime(DateTime.Now);
+                        break;
+                    case "tomorrow":
+                        dateAsDateOnly = DateOnly.FromDateTime(DateTime.Now.AddDays(1));
+                        break;
+                    case "yesterday":
+                        dateAsDateOnly = DateOnly.FromDateTime(DateTime.Now.AddDays(-1));
+                        break;
+                    default:
+                        dateAsDateOnly = DateOnly.Parse(date);
+                        break;
+                }
             }
-            return result;
-        }
-
-        [HttpGet]
-        [Route("GetNextFixture/{team}")]
-        public Fixture? GetNextFixture(string team)
-        {
-            var result = f.GetNextFixture(team);
-            if (result == null)
-            {
-                Response.StatusCode = 404;
-            }
-            return result;
-        }
-
-
-        [HttpGet]
-        [Route("GetNextFixture/{team}/{date}")]
-        public Fixture? GetNextFixture(string team, DateTime date)
-        {
-            var result = f.GetFixtureByDate(team, DateOnly.FromDateTime(date));
-            if (result == null)
-            {
-                Response.StatusCode = 404;
-            }
-            return result;
+            return dateAsDateOnly;
         }
     }
 }

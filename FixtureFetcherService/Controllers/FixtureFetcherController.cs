@@ -5,7 +5,7 @@ namespace FixtureFetcherService.Controllers
     [ApiController]
     public class FixtureFetcherController : ControllerBase
     {
-        private readonly FixtureFetcherService f = new();
+        private readonly FixtureFetcher _fixtureFetcher = new();
         private readonly ILogger<FixtureFetcherController> _logger;
 
         public FixtureFetcherController(ILogger<FixtureFetcherController> logger)
@@ -18,20 +18,15 @@ namespace FixtureFetcherService.Controllers
         public Fixture? GetFixture(string sportType, string teamName)
         {
             DateOnly? date = GetDateFromUrlParameters();
-            
-            Fixture? result = null;
-            switch (sportType)
+
+            Fixture? result;
+            if (date != null)
             {
-                case "soccer":
-                    if (date != null)
-                    {
-                        result = f.GetFixtureByDate(teamName, date.Value);
-                    }
-                    else
-                    {
-                        result = f.GetNextFixture(teamName);
-                    }
-                    break;
+                result = _fixtureFetcher.GetFixtureByDate(sportType, teamName, date.Value);
+            }
+            else
+            {
+                result = _fixtureFetcher.GetNextFixture(sportType, teamName);
             }
 
             if (result == null)

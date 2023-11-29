@@ -1,4 +1,5 @@
 ﻿using Ical.Net.CalendarComponents;
+using System.Diagnostics.Metrics;
 using Calendar = Ical.Net.Calendar;
 
 namespace FixtureFetcherService
@@ -40,10 +41,12 @@ namespace FixtureFetcherService
             return null;
         }
 
+
+
         public Fixture? GetFixture(string sportType, string team)
         {
             Calendar teamCalendar = GetTeamCalendar(sportType, team);
-            CalendarEvent? calendarEvent = teamCalendar.Events.FirstOrDefault(x => x.DtStart.AsUtc >= DateTime.UtcNow);
+            CalendarEvent? calendarEvent = teamCalendar.Events.OrderBy(x => x.DtStart).FirstOrDefault(x => x.DtStart.AsUtc >= DateTime.UtcNow);
             if (calendarEvent != null)
             {
                 var teams = calendarEvent.Summary.Split(" at ");

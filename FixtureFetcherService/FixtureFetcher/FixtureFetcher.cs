@@ -1,8 +1,5 @@
 ﻿
 using Ical.Net.CalendarComponents;
-using Ical.Net;
-using Ical.Net.Proxies;
-using Microsoft.Extensions.Logging;
 namespace FixtureFetcherService.FixtureFetcherHelpers
 {
     public class FixtureFetcher : IFixtureFetcher

@@ -6,7 +6,7 @@ namespace FixtureFetcherService.FixtureFetcherHelpers
 {
     public class CalendarFetcher : ICalendarFetcher
     {
-        private Calendar GetCalendar(string sportType, string teamName)
+        private static Calendar GetCalendar(string sportType, string teamName)
         {
             try
             {

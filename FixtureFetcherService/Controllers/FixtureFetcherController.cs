@@ -1,5 +1,5 @@
+using FixtureFetcherService.FixtureFetcherHelpers;
 using Microsoft.AspNetCore.Mvc;
-
 namespace FixtureFetcherService.Controllers
 {
     [ApiController]
@@ -22,11 +22,11 @@ namespace FixtureFetcherService.Controllers
             Fixture? result;
             if (date != null)
             {
-                result = _fixtureFetcher.GetFixtureByDate(sportType, teamName, date.Value);
+                result = _fixtureFetcher.GetFixture(sportType, teamName, date.Value);
             }
             else
             {
-                result = _fixtureFetcher.GetNextFixture(sportType, teamName);
+                result = _fixtureFetcher.GetFixture(sportType, teamName);
             }
 
             if (result == null)

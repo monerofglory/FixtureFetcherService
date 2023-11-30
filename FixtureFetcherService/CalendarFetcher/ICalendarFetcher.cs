@@ -1,9 +1,11 @@
 ﻿using Ical.Net;
+using Ical.Net.CalendarComponents;
+using Ical.Net.Proxies;
 
 namespace FixtureFetcherService.FixtureFetcherHelpers
 {
     public interface ICalendarFetcher
     {
-        public Calendar GetCalendar(string sportType, string teamName);
+        public IUniqueComponentList<CalendarEvent> GetCalendarEvents(string sportType, string teamName);
     }
 }

@@ -1,49 +1,47 @@
 ﻿
 using Ical.Net.CalendarComponents;
 using Ical.Net;
+using Ical.Net.Proxies;
+using Microsoft.Extensions.Logging;
 namespace FixtureFetcherService.FixtureFetcherHelpers
 {
     public class FixtureFetcher : IFixtureFetcher
     {
 
-        private CalendarFetcher _calendarFetcher = new();
+        private readonly CalendarFetcher _calendarFetcher = new();
         public Fixture? GetFixture(string sportType, string teamName, DateOnly date)
         {
-            Calendar cal = _calendarFetcher.GetCalendar(sportType, teamName);
-            
-            CalendarEvent? calendarEvent = cal.Events.FirstOrDefault(x => DateOnly.FromDateTime(x.Start.Date) == date);
+            CalendarEvent? calendarEvent = _calendarFetcher.GetCalendarEvents(sportType, teamName).FirstOrDefault(x => DateOnly.FromDateTime(x.Start.Date) == date);
             if (calendarEvent != null)
             {
-                var teams = calendarEvent.Summary.Split(" at ");
-
-                return new Fixture
-                {
-                    HomeTeam = teams.First().Replace("-", " "),
-                    AwayTeam = teams.Last().Replace("-", " "),
-                    KickOff = calendarEvent.DtStart.Value
-                };
+                return CreateFixtureObject(calendarEvent);
             }
             return null;
             
         }
 
+
         public Fixture? GetFixture(string sportType, string teamName)
         {
-            Calendar cal = _calendarFetcher.GetCalendar(sportType, teamName);
-            CalendarEvent? calendarEvent = cal.Events.OrderBy(x => x.DtStart).FirstOrDefault(x => x.DtStart.AsUtc >= DateTime.UtcNow);
+            CalendarEvent? calendarEvent = _calendarFetcher.GetCalendarEvents(sportType, teamName).OrderBy(x => x.DtStart).FirstOrDefault(x => x.DtStart.AsUtc >= DateTime.UtcNow);
             if (calendarEvent != null)
             {
-                var teams = calendarEvent.Summary.Split(" at ");
-
-                return new Fixture
-                {
-                    HomeTeam = teams.First().Replace("-", " "),
-                    AwayTeam = teams.Last().Replace("-", " "),
-                    KickOff = calendarEvent.DtStart.Value
-                };
+                return CreateFixtureObject(calendarEvent);
             }
             return null;
             
+        }
+
+        private static Fixture CreateFixtureObject(CalendarEvent calendarEvent)
+        {
+            var teams = calendarEvent.Summary.Split(" at ");
+
+            return new Fixture
+            {
+                HomeTeam = teams.First().Replace("-", " "),
+                AwayTeam = teams.Last().Replace("-", " "),
+                KickOff = calendarEvent.DtStart.Value
+            };
         }
     }
 }

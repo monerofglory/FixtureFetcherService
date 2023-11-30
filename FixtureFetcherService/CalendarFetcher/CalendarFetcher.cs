@@ -1,10 +1,12 @@
 ﻿using Ical.Net;
+using Ical.Net.CalendarComponents;
+using Ical.Net.Proxies;
 
 namespace FixtureFetcherService.FixtureFetcherHelpers
 {
     public class CalendarFetcher : ICalendarFetcher
     {
-        public Calendar GetCalendar(string sportType, string teamName)
+        private Calendar GetCalendar(string sportType, string teamName)
         {
             try
             {
@@ -14,6 +16,10 @@ namespace FixtureFetcherService.FixtureFetcherHelpers
             {
                 throw new FileNotFoundException($"Calendar file for {sportType} team {teamName} does not exist or is not supported.");
             }
+        }
+        public IUniqueComponentList<CalendarEvent> GetCalendarEvents(string sportType, string teamName)
+        {
+            return GetCalendar(sportType, teamName).Events;
         }
         private static async Task<Calendar> GetICalAsync(string url)
         {

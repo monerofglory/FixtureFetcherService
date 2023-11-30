@@ -1,35 +1,21 @@
-﻿using Ical.Net.CalendarComponents;
-using Calendar = Ical.Net.Calendar;
-
-namespace FixtureFetcherService
+﻿
+using Ical.Net.CalendarComponents;
+using Ical.Net;
+namespace FixtureFetcherService.FixtureFetcherHelpers
 {
-    public class FixtureFetcher
+    public class FixtureFetcher : IFixtureFetcher
     {
-        public Fixture? GetFixtureByDate(string sportType, string team, DateOnly date)
-        {
-            return GetFixture(sportType, team, date);
-        }
 
-        public Fixture? GetNextFixture(string sportType, string team)
+        private CalendarFetcher _calendarFetcher = new();
+        public Fixture? GetFixture(string sportType, string teamName, DateOnly date)
         {
-            return GetFixture(sportType, team);
-        }
-
-        private static async Task<Calendar> GetICalAsync(string url)
-        {
-            using var client = new HttpClient();
-            using var stream = await client.GetStreamAsync(url);
-            return Calendar.Load(stream);
-        }
-
-        public Fixture? GetFixture(string sportType, string team, DateOnly date)
-        {
-            Calendar cal = GetTeamCalendar(sportType, team);
+            Calendar cal = _calendarFetcher.GetCalendar(sportType, teamName);
+            
             CalendarEvent? calendarEvent = cal.Events.FirstOrDefault(x => DateOnly.FromDateTime(x.Start.Date) == date);
             if (calendarEvent != null)
             {
                 var teams = calendarEvent.Summary.Split(" at ");
-                
+
                 return new Fixture
                 {
                     HomeTeam = teams.First().Replace("-", " "),
@@ -38,12 +24,13 @@ namespace FixtureFetcherService
                 };
             }
             return null;
+            
         }
 
-        public Fixture? GetFixture(string sportType, string team)
+        public Fixture? GetFixture(string sportType, string teamName)
         {
-            Calendar teamCalendar = GetTeamCalendar(sportType, team);
-            CalendarEvent? calendarEvent = teamCalendar.Events.OrderBy(x => x.DtStart).FirstOrDefault(x => x.DtStart.AsUtc >= DateTime.UtcNow);
+            Calendar cal = _calendarFetcher.GetCalendar(sportType, teamName);
+            CalendarEvent? calendarEvent = cal.Events.OrderBy(x => x.DtStart).FirstOrDefault(x => x.DtStart.AsUtc >= DateTime.UtcNow);
             if (calendarEvent != null)
             {
                 var teams = calendarEvent.Summary.Split(" at ");
@@ -56,18 +43,7 @@ namespace FixtureFetcherService
                 };
             }
             return null;
-        }
-
-        private static Calendar GetTeamCalendar(string sportType, string team)
-        {
-            try
-            {
-                return GetICalAsync($"https://sports.yahoo.com/{sportType}/teams/{team}/ical.ics").Result;
-            }
-            catch (Exception)
-            {
-                throw new FileNotFoundException($"Calendar file for {sportType} team {team} does not exist or is not supported.");
-            }
+            
         }
     }
 }
